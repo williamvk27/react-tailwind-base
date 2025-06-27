@@ -12,12 +12,14 @@ interface CartSummaryProps {
   items?: CartItem[];
   onCheckout?: () => void;
   onClose?: () => void;
+  onRemoveItem?: (id: number) => void;
 }
 
 export function CartSummary({
   items = [],
   onCheckout,
   onClose,
+  onRemoveItem,
 }: CartSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -100,6 +102,12 @@ export function CartSummary({
                 <p className='text-ms-green font-bold text-sm'>
                   R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}
                 </p>
+                <button
+                  onClick={() => onRemoveItem?.(item.id)}
+                  className='text-red-500 text-xs underline mt-1 hover:text-red-300 transition'
+                >
+                  Remover
+                </button>
               </div>
             ))}
           </div>

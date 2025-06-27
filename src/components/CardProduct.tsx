@@ -5,6 +5,14 @@ interface CardProductProps {
   price: string;
   variant?: 'default' | 'horizontal';
   rating?: string;
+  onAddClick?: () => void;
+  onAddToCart?: (item: {
+    id: number;
+    name: string;
+    price: number;
+    image: string;
+    quantity: number;
+  }) => void;
 }
 
 export const CardProduct = ({
@@ -14,7 +22,10 @@ export const CardProduct = ({
   price,
   variant = 'default',
   rating = '4.8',
+  onAddToCart,
+  onAddClick,
 }: CardProductProps) => {
+  const id = Math.floor(Math.random() * 100000); // ID único temporário
   const isHorizontal = variant === 'horizontal';
 
   const baseClasses =
@@ -60,7 +71,22 @@ export const CardProduct = ({
 
           <div className='flex justify-between items-center mt-1'>
             <span className='text-sm  text-ms-green'>{price}</span>
-            <button className='bg-ms-green hover:bg-green-400  text-black font-bold px-3 py-1.5 rounded-lg text-xs transition-all duration-300 hover:scale-105'>
+            <button
+              onClick={() => {
+                if (onAddClick) {
+                  onAddClick(); // se houver personalização, abre o modal
+                } else {
+                  onAddToCart?.({
+                    id,
+                    name: title,
+                    price: Number(price.replace('R$', '').replace(',', '.')),
+                    image: img ?? '',
+                    quantity: 1,
+                  });
+                }
+              }}
+              className='bg-ms-green hover:bg-green-400 text-black font-bold px-3 py-1.5 rounded-lg text-xs transition-all duration-300 hover:scale-105'
+            >
               Adicionar
             </button>
           </div>
