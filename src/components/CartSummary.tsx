@@ -21,7 +21,7 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  image?: string;
+  image: string;
   extras?: Record<string, number>; // Adicionado campo para extras
   total: number; // Adicionado campo para total (preço base + extras)
   observation?: string; // Adicionado campo para observação
@@ -32,13 +32,33 @@ interface CartSummaryProps {
   onCheckout?: () => void;
   onClose?: () => void;
   onRemoveItem?: (id: number) => void;
+  onEditItem?: (item: CartItem) => void; // Nova prop para edição de item
 }
+
+// Ícone de edição (lápis)
+const EditIcon = () => (
+  <svg
+    className='w-4 h-4'
+    fill='none'
+    stroke='currentColor'
+    viewBox='0 0 24 24'
+    xmlns='http://www.w3.org/2000/svg'
+  >
+    <path
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      strokeWidth={2}
+      d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
+    />
+  </svg>
+);
 
 export function CartSummary({
   items = [],
   onCheckout,
   onClose,
   onRemoveItem,
+  onEditItem,
 }: CartSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -159,12 +179,30 @@ export function CartSummary({
                           .toFixed(2)
                           .replace('.', ',')}
                       </p>
-                      <button
-                        onClick={() => onRemoveItem?.(item.id)}
-                        className='text-red-500 text-xs underline mt-1 hover:text-red-300 transition'
-                      >
-                        Remover
-                      </button>
+                      <div className='flex gap-2 mt-1'>
+                        {/* Botão de edição */}
+                        {onEditItem && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditItem(item);
+                            }}
+                            className='flex items-center gap-1 text-blue-400 text-xs hover:text-blue-300 transition bg-blue-900/30 hover:bg-blue-900/50 px-2 py-1 rounded'
+                          >
+                            <EditIcon /> Editar
+                          </button>
+                        )}
+                        {/* Botão de remoção */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRemoveItem?.(item.id);
+                          }}
+                          className='text-red-500 text-xs hover:text-red-300 transition bg-red-900/30 hover:bg-red-900/50 px-2 py-1 rounded'
+                        >
+                          Remover
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

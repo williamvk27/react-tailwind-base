@@ -32,6 +32,7 @@ type CartItemType = {
   image: string;
   extras?: Record<string, number>; // Adicionado campo para extras
   total: number; // Adicionado campo para total (preço base + extras)
+  observation?: string; // Adicionado campo para observação
 };
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState<CartItemType | null>(
     null
   );
+  const [editingItemId, setEditingItemId] = useState<number | null>(null); // Para controlar qual item está sendo editado
 
   const [cartItems, setCartItems] = useState<CartItemType[]>([]);
 
@@ -62,43 +64,72 @@ function App() {
     // Calcula o valor total dos extras
     const extrasTotal = calculateExtrasTotal(extras);
 
-    // Cria o item com o total correto (preço base + extras)
-    const newItem: CartItemType = {
-      ...product,
-      extras: extras,
-      total: product.price + extrasTotal,
-    };
-
-    setCartItems((prevItems) => {
-      // Verifica se já existe um item idêntico (mesmo produto e mesmos extras)
-      const existingItemIndex = prevItems.findIndex(
-        (item) =>
-          item.id === newItem.id &&
-          JSON.stringify(item.extras) === JSON.stringify(newItem.extras)
-      );
-
-      if (existingItemIndex !== -1) {
-        // Se já existe, incrementa a quantidade e atualiza o total
-        return prevItems.map((item, index) =>
-          index === existingItemIndex
+    // Se estamos editando um item existente
+    if (editingItemId !== null) {
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === editingItemId
             ? {
                 ...item,
-                quantity: item.quantity + 1,
-                total:
-                  (item.price + calculateExtrasTotal(item.extras || {})) *
-                  (item.quantity + 1),
+                extras: extras,
+                observation: observation,
+                total: product.price + extrasTotal,
               }
             : item
-        );
-      }
+        )
+      );
+      setEditingItemId(null); // Resetar o modo de edição
+    } else {
+      // Cria o item com o total correto (preço base + extras)
+      const newItem: CartItemType = {
+        ...product,
+        extras: extras,
+        observation: observation,
+        total: product.price + extrasTotal,
+      };
 
-      // Se não existe, adiciona novo
-      return [...prevItems, newItem];
-    });
+      setCartItems((prevItems) => {
+        // Verifica se já existe um item idêntico (mesmo produto e mesmos extras)
+        const existingItemIndex = prevItems.findIndex(
+          (item) =>
+            item.id === newItem.id &&
+            JSON.stringify(item.extras) === JSON.stringify(newItem.extras)
+        );
+
+        if (existingItemIndex !== -1) {
+          // Se já existe, incrementa a quantidade e atualiza o total
+          return prevItems.map((item, index) =>
+            index === existingItemIndex
+              ? {
+                  ...item,
+                  quantity: item.quantity + 1,
+                  total:
+                    (item.price + calculateExtrasTotal(item.extras || {})) *
+                    (item.quantity + 1),
+                }
+              : item
+          );
+        }
+
+        // Se não existe, adiciona novo
+        return [...prevItems, newItem];
+      });
+    }
   };
 
   const handleRemoveFromCart = (id: number) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  };
+
+  // Nova função para lidar com a edição de um item
+  const handleEditItem = (item: CartItemType) => {
+    setSelectedProduct({
+      ...item,
+      quantity: 1, // Resetamos a quantidade para 1 no modal de edição
+    });
+    setEditingItemId(item.id); // Marcamos qual item está sendo editado
+    setShowCustomization(true);
+    setShowCartSummary(false); // Opcional: fechar o carrinho ao editar
   };
 
   const handleNavigation = (section: 'home' | 'orders' | 'cart') => {
@@ -171,6 +202,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 7.0, // Inicializa com o preço base
             });
+            setEditingItemId(null); // Garantir que não estamos em modo de edição
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -200,6 +232,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 7.5, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -229,6 +262,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 8.5, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -258,6 +292,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 11.0, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -287,6 +322,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 11.0, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -316,6 +352,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 12.0, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -345,6 +382,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 13.5, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -374,6 +412,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 15.0, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -403,6 +442,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 8.0, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -432,6 +472,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 11.0, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -461,6 +502,7 @@ function App() {
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
               total: 16.0, // Inicializa com o preço base
             });
+            setEditingItemId(null);
             setShowCustomization(true);
           }}
           onAddToCart={(product) =>
@@ -574,8 +616,24 @@ function App() {
       {showCustomization && selectedProduct && (
         <ProductCustomizationModal
           product={selectedProduct}
-          onClose={() => setShowCustomization(false)}
+          onClose={() => {
+            setShowCustomization(false);
+            setEditingItemId(null); // Limpar o modo de edição ao fechar
+          }}
           onAddToCart={handleAddToCart}
+          initialExtras={
+            editingItemId !== null
+              ? cartItems.find((item) => item.id === editingItemId)?.extras ||
+                {}
+              : {}
+          }
+          initialObservation={
+            editingItemId !== null
+              ? cartItems.find((item) => item.id === editingItemId)
+                  ?.observation || ''
+              : ''
+          }
+          isEditing={editingItemId !== null}
         />
       )}
 
@@ -586,6 +644,7 @@ function App() {
             onCheckout={() => alert('Checkout iniciado!')}
             onClose={() => setShowCartSummary(false)}
             onRemoveItem={handleRemoveFromCart}
+            onEditItem={handleEditItem}
           />
         </div>
       )}

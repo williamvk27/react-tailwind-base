@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type AdditionalItem = {
   id: string;
@@ -84,15 +84,27 @@ interface Props {
     price: number;
     total: number;
   };
+  initialExtras?: Record<string, number>; // Para pré-preencher extras ao editar
+  initialObservation?: string; // Para pré-preencher observação ao editar
+  isEditing?: boolean; // Indica se estamos editando um item existente
 }
 
 export function ProductCustomizationModal({
   onClose,
   onAddToCart,
   product,
+  initialExtras = {},
+  initialObservation = '',
+  isEditing = false,
 }: Props) {
-  const [extras, setExtras] = useState<Record<string, number>>({});
-  const [observation, setObservation] = useState('');
+  const [extras, setExtras] = useState<Record<string, number>>(initialExtras);
+  const [observation, setObservation] = useState(initialObservation);
+
+  // Efeito para atualizar os estados quando as props mudam (útil para edição)
+  useEffect(() => {
+    setExtras(initialExtras);
+    setObservation(initialObservation);
+  }, [initialExtras, initialObservation]);
 
   const handleIncrease = (id: string) => {
     setExtras((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
@@ -118,7 +130,9 @@ export function ProductCustomizationModal({
       <div className='bg-black border-t border-ms-green/30 sm:border sm:border-ms-green/30 w-full max-w-sm sm:rounded-xl shadow-2xl shadow-ms-green/20 animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 duration-300 max-h-[95vh] overflow-hidden flex flex-col'>
         {/* Header */}
         <div className='flex items-center justify-between p-4 border-b border-ms-green/20 flex-shrink-0'>
-          <h2 className='text-lg font-bold text-white'>Monte seu lanche</h2>
+          <h2 className='text-lg font-bold text-white'>
+            {isEditing ? 'Editar item' : 'Monte seu lanche'}
+          </h2>
           <button
             onClick={onClose}
             className='text-gray-400 hover:text-ms-green transition-colors p-1 hover:bg-ms-green/10 rounded-lg'
@@ -262,7 +276,7 @@ export function ProductCustomizationModal({
               }}
               className='flex-1 bg-ms-green hover:bg-green-400 active:bg-green-500 text-black font-bold py-3 px-4 rounded-lg transition-all shadow-lg shadow-ms-green/30 text-sm touch-manipulation'
             >
-              Adicionar
+              {isEditing ? 'Salvar alterações' : 'Adicionar'}
             </button>
           </div>
         </div>
