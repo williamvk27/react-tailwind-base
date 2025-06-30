@@ -7,12 +7,31 @@ import { Hero } from './components/Hero';
 import { Section } from './components/Section';
 import { ProductCustomizationModal } from './components/ProductCustomizationModal';
 
+// Definição do tipo AdditionalItem para referência
+type AdditionalItem = {
+  id: string;
+  name: string;
+  price: number;
+};
+
+// Constante com os adicionais disponíveis
+const ADDITIONALS: AdditionalItem[] = [
+  { id: 'carne', name: 'Carne', price: 3.0 },
+  { id: 'queijo', name: 'Queijo', price: 2.0 },
+  { id: 'ovo', name: 'Ovo', price: 2.0 },
+  { id: 'calabresa', name: 'Calabresa', price: 3.0 },
+  { id: 'bacon', name: 'Bacon', price: 3.0 },
+];
+
+// Tipo atualizado para incluir extras e total
 type CartItemType = {
   id: number;
   name: string;
   price: number;
   quantity: number;
   image: string;
+  extras?: Record<string, number>; // Adicionado campo para extras
+  total: number; // Adicionado campo para total (preço base + extras)
 };
 
 function App() {
@@ -24,15 +43,51 @@ function App() {
 
   const [cartItems, setCartItems] = useState<CartItemType[]>([]);
 
-  const handleAddToCart = (newItem: CartItemType) => {
-    setCartItems((prevItems) => {
-      const itemExists = prevItems.find((item) => item.name === newItem.name);
+  // Função auxiliar para calcular o valor dos extras
+  const calculateExtrasTotal = (extras: Record<string, number>) => {
+    return ADDITIONALS.reduce(
+      (sum, item) => sum + (extras[item.id] || 0) * item.price,
+      0
+    );
+  };
 
-      if (itemExists) {
-        // Se já existe, incrementa a quantidade
-        return prevItems.map((item) =>
-          item.name === newItem.name
-            ? { ...item, quantity: item.quantity + 1 }
+  // Função modificada para lidar com extras e total
+  const handleAddToCart = (data: {
+    product: CartItemType;
+    extras: Record<string, number>;
+    observation: string;
+  }) => {
+    const { product, extras, observation } = data;
+
+    // Calcula o valor total dos extras
+    const extrasTotal = calculateExtrasTotal(extras);
+
+    // Cria o item com o total correto (preço base + extras)
+    const newItem: CartItemType = {
+      ...product,
+      extras: extras,
+      total: product.price + extrasTotal,
+    };
+
+    setCartItems((prevItems) => {
+      // Verifica se já existe um item idêntico (mesmo produto e mesmos extras)
+      const existingItemIndex = prevItems.findIndex(
+        (item) =>
+          item.id === newItem.id &&
+          JSON.stringify(item.extras) === JSON.stringify(newItem.extras)
+      );
+
+      if (existingItemIndex !== -1) {
+        // Se já existe, incrementa a quantidade e atualiza o total
+        return prevItems.map((item, index) =>
+          index === existingItemIndex
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                total:
+                  (item.price + calculateExtrasTotal(item.extras || {})) *
+                  (item.quantity + 1),
+              }
             : item
         );
       }
@@ -114,10 +169,20 @@ function App() {
               price: 7.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 7.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -133,10 +198,20 @@ function App() {
               price: 7.5,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 7.5, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -152,10 +227,20 @@ function App() {
               price: 8.5,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 8.5, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -171,10 +256,20 @@ function App() {
               price: 11.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 11.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -190,10 +285,20 @@ function App() {
               price: 11.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 11.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -209,10 +314,20 @@ function App() {
               price: 12.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 12.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -228,10 +343,20 @@ function App() {
               price: 13.5,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 13.5, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -247,10 +372,20 @@ function App() {
               price: 15.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 15.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -266,10 +401,20 @@ function App() {
               price: 8.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 8.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -285,10 +430,20 @@ function App() {
               price: 11.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 11.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
 
         <CardProduct
@@ -304,10 +459,20 @@ function App() {
               price: 16.0,
               quantity: 1,
               image: 'https://i.ibb.co/PvSg29H4/tri-onda-cartoon.png',
+              total: 16.0, // Inicializa com o preço base
             });
             setShowCustomization(true);
           }}
-          onAddToCart={handleAddToCart}
+          onAddToCart={(product) =>
+            handleAddToCart({
+              product: {
+                ...product,
+                total: product.price, // Inicializa com o preço base para adição direta
+              },
+              extras: {},
+              observation: '',
+            })
+          }
         />
       </Section>
 
@@ -402,21 +567,15 @@ function App() {
       </Section>
 
       <BottomNavigation
-        cartCount={cartItems.length} // Já estava correto
-        onNavigate={handleNavigation} // <--- ADICIONE ESTA LINHA AQUI!
+        cartCount={cartItems.length}
+        onNavigate={handleNavigation}
       />
 
       {showCustomization && selectedProduct && (
         <ProductCustomizationModal
           product={selectedProduct}
           onClose={() => setShowCustomization(false)}
-          onAddToCart={(data) => {
-            handleAddToCart({
-              ...selectedProduct,
-              quantity: 1, // ou pode somar os extras se quiser
-            });
-            setShowCustomization(false);
-          }}
+          onAddToCart={handleAddToCart}
         />
       )}
 
@@ -425,7 +584,7 @@ function App() {
           <CartSummary
             items={cartItems}
             onCheckout={() => alert('Checkout iniciado!')}
-            onClose={() => setShowCartSummary(false)} // Função para fechar o resumo
+            onClose={() => setShowCartSummary(false)}
             onRemoveItem={handleRemoveFromCart}
           />
         </div>

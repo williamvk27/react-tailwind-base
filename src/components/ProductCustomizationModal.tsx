@@ -68,13 +68,21 @@ interface Props {
   onAddToCart: (data: {
     extras: Record<string, number>;
     observation: string;
-    product;
+    product: {
+      id: number;
+      name: string;
+      image: string;
+      price: number;
+      quantity: number;
+      total: number;
+    };
   }) => void;
   product: {
     id: number;
     name: string;
     image: string;
     price: number;
+    total: number;
   };
 }
 
@@ -99,7 +107,11 @@ export function ProductCustomizationModal({
     0
   );
 
-  const totalFinal = product.price + totalExtras;
+  console.log('Price:', product.price);
+  console.log('Extras:', totalExtras);
+  console.log('Soma:', product.price + totalExtras);
+
+  const totalFinal = Number(product.price) + totalExtras;
 
   return (
     <div className='fixed inset-0 bg-black/90 backdrop-blur-sm flex justify-center items-end sm:items-center z-50'>
@@ -233,7 +245,19 @@ export function ProductCustomizationModal({
 
             <button
               onClick={() => {
-                onAddToCart({ extras, observation, product });
+                onAddToCart({
+                  product: {
+                    id: product.id,
+                    name: product.name,
+                    image: product.image,
+                    price: product.price,
+                    quantity: 1,
+                    total: totalFinal, // Usando o total calculado com os extras
+                  },
+                  observation,
+                  extras,
+                });
+
                 onClose();
               }}
               className='flex-1 bg-ms-green hover:bg-green-400 active:bg-green-500 text-black font-bold py-3 px-4 rounded-lg transition-all shadow-lg shadow-ms-green/30 text-sm touch-manipulation'

@@ -1,11 +1,30 @@
 import { useState } from 'react';
 
+// Definição do tipo AdditionalItem para referência
+type AdditionalItem = {
+  id: string;
+  name: string;
+  price: number;
+};
+
+// Constante com os adicionais disponíveis
+const ADDITIONALS: AdditionalItem[] = [
+  { id: 'carne', name: 'Carne', price: 3.0 },
+  { id: 'queijo', name: 'Queijo', price: 2.0 },
+  { id: 'ovo', name: 'Ovo', price: 2.0 },
+  { id: 'calabresa', name: 'Calabresa', price: 3.0 },
+  { id: 'bacon', name: 'Bacon', price: 3.0 },
+];
+
 interface CartItem {
   id: number;
   name: string;
   price: number;
   quantity: number;
   image?: string;
+  extras?: Record<string, number>; // Adicionado campo para extras
+  total: number; // Adicionado campo para total (preço base + extras)
+  observation?: string; // Adicionado campo para observação
 }
 
 interface CartSummaryProps {
@@ -23,8 +42,9 @@ export function CartSummary({
 }: CartSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Cálculo do total usando o campo total de cada item (que já inclui extras)
   const total = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + item.total * item.quantity,
     0
   );
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -77,39 +97,79 @@ export function CartSummary({
         {/* Lista de itens */}
         {isExpanded && (
           <div className='border-t border-gray-700 bg-black/40 backdrop-blur-sm max-h-60 overflow-y-auto px-4 py-3 space-y-3'>
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className='flex items-center justify-between bg-black/70 p-3 rounded-lg shadow-inner border border-gray-700'
-              >
-                <div className='flex items-center gap-3'>
-                  {item.image && (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className='w-12 h-12 rounded object-cover'
-                    />
-                  )}
-                  <div>
-                    <p className='text-sm text-white font-medium'>
-                      {item.name}
-                    </p>
-                    <p className='text-xs text-gray-400'>
-                      Qtd: {item.quantity}
-                    </p>
+            {items.map((item) => {
+              // Função para renderizar os extras do item
+              const renderExtras = () => {
+                if (!item.extras) return null;
+
+                const extrasArray = Object.entries(item.extras)
+                  .filter(([_, quantity]) => quantity > 0)
+                  .map(([id, quantity]) => {
+                    const extra = ADDITIONALS.find((a) => a.id === id);
+                    if (!extra || quantity <= 0) return null;
+                    return `${quantity}x ${extra.name}`;
+                  })
+                  .filter(Boolean);
+
+                if (extrasArray.length === 0) return null;
+
+                return (
+                  <p className='text-xs text-ms-green mt-1'>
+                    <span className='font-semibold'>Extras:</span>{' '}
+                    {extrasArray.join(', ')}
+                  </p>
+                );
+              };
+
+              return (
+                <div
+                  key={item.id}
+                  className='flex flex-col bg-black/70 p-3 rounded-lg shadow-inner border border-gray-700'
+                >
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-3'>
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className='w-12 h-12 rounded object-cover'
+                        />
+                      )}
+                      <div>
+                        <p className='text-sm text-white font-medium'>
+                          {item.name}
+                        </p>
+                        <p className='text-xs text-gray-400'>
+                          Qtd: {item.quantity}
+                        </p>
+                        {/* Exibição dos extras */}
+                        {renderExtras()}
+                        {/* Exibição da observação */}
+                        {item.observation && (
+                          <p className='text-xs text-gray-300 mt-1 italic'>
+                            "{item.observation}"
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className='flex flex-col items-end'>
+                      <p className='text-ms-green font-bold text-sm'>
+                        R${' '}
+                        {(item.total * item.quantity)
+                          .toFixed(2)
+                          .replace('.', ',')}
+                      </p>
+                      <button
+                        onClick={() => onRemoveItem?.(item.id)}
+                        className='text-red-500 text-xs underline mt-1 hover:text-red-300 transition'
+                      >
+                        Remover
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <p className='text-ms-green font-bold text-sm'>
-                  R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}
-                </p>
-                <button
-                  onClick={() => onRemoveItem?.(item.id)}
-                  className='text-red-500 text-xs underline mt-1 hover:text-red-300 transition'
-                >
-                  Remover
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
